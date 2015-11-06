@@ -2,6 +2,7 @@
 
 import urllib.request
 import sys
+import os.path
 from bs4 import BeautifulSoup
 
 
@@ -10,6 +11,7 @@ Read text news from ctvnews.ca
 """
 
 weburl = "http://toronto.ctvnews.ca/more/local-news"
+savedir = "./news/"
 
 
 def getPageSourceFromURL(weburl):
@@ -19,6 +21,14 @@ def getPageSourceFromURL(weburl):
     type = sys.getfilesystemencoding()
     return the_page.decode(type)
 
+
+def writeToFile(filename, lines):
+    f = open(filename, "w");
+    for line in lines:
+        if line.string != None:        
+            f.write(line.string)
+    f.close()
+    
 ### get article list
 pageSource = getPageSourceFromURL(weburl)
 soup = BeautifulSoup(pageSource)
@@ -45,8 +55,6 @@ for news in news_li:
 
     newsList.append(newsDict)
 
-
-
 """
 <div class="articleBody">
     <p> bla...bla...bla... </p>
@@ -59,17 +67,25 @@ Only care about <p>bla...</p>
 """
 ### get article body
 count = 1
+
+# reverse the newslist to make sure that older news will be saved first
+newsList.reverse()
 for news in newsList:
     print("{}: {}".format(count, news["title"]))
     count += 1
+
+    fileName = savedir + news["href"].split("/")[-1] #get the last element in url    
+    if  os.path.exists(fileName) == True:
+        print("already exists")
+        continue
 
     pageSource = getPageSourceFromURL(news["href"])
     soup = BeautifulSoup(pageSource)
     articleBody = soup.find("div", class_="articleBody")
     articleLines = articleBody.find_all("p")
-    for line in articleLines:
-        if line.string != None:
-            print(line.string)
+
+    print("write to file")
+    writeToFile(fileName, articleLines)
 
     print("\n")
 
