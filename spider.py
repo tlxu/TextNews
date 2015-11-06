@@ -2,7 +2,6 @@
 
 import urllib.request
 import sys
-
 from bs4 import BeautifulSoup
 
 
@@ -13,13 +12,16 @@ Read text news from ctvnews.ca
 weburl = "http://toronto.ctvnews.ca/more/local-news"
 
 
+def getPageSourceFromURL(weburl):
+    req = urllib.request.Request(weburl)
+    response = urllib.request.urlopen(req)
+    the_page = response.read()
+    type = sys.getfilesystemencoding()
+    return the_page.decode(type)
+
 ### get article list
-req = urllib.request.Request(weburl)
-response = urllib.request.urlopen(req)
-the_page = response.read()
-type = sys.getfilesystemencoding()
- 
-soup = BeautifulSoup(the_page.decode(type))
+pageSource = getPageSourceFromURL(weburl)
+soup = BeautifulSoup(pageSource)
 news_div = soup.find("div", class_="element list topStoryPromo ")
 news_li = news_div.find_all("li", class_="dc")
 
@@ -45,21 +47,34 @@ for news in news_li:
 
 
 
-count = 1
-for news in newsList:
-    print(count)
-    print(news["title"])
-    print(news["href"])
-    count += 1
-    print("\n")
-print(count)
-
-
-
 """
 <div class="articleBody">
-    bla...bla...bla...
+    <p> bla...bla...bla... </p>
+    <p> bla...bla...bla... </p>
+    <p> bla...bla...bla... </p>
+    ...
 </div>
+
+Only care about <p>bla...</p>
 """
 ### get article body
+count = 1
+for news in newsList:
+    print("{}: {}".format(count, news["title"]))
+    count += 1
+
+    pageSource = getPageSourceFromURL(news["href"])
+    soup = BeautifulSoup(pageSource)
+    articleBody = soup.find("div", class_="articleBody")
+    articleLines = articleBody.find_all("p")
+    for line in articleLines:
+        if line.string != None:
+            print(line.string)
+
+    print("\n")
+
+
+
+
+
 
