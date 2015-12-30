@@ -82,7 +82,11 @@ for news in newsList:
     pageSource = getPageSourceFromURL(news["href"])
     soup = BeautifulSoup(pageSource)
     articleBody = soup.find("div", class_="articleBody")
+    if articleBody is None:
+        print("ignore this article.");
+        continue;
     articleLines = articleBody.find_all("p")
+
 
     print("write to file")
     writeToFile(fileName, articleLines)
