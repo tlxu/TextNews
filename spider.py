@@ -79,7 +79,12 @@ for news in newsList:
         print("already exists")
         continue
 
-    pageSource = getPageSourceFromURL(news["href"])
+    try:
+        pageSource = getPageSourceFromURL(news["href"])
+    except:
+        print("Cannot get page source, ingore this article")
+        continue
+
     soup = BeautifulSoup(pageSource)
     articleBody = soup.find("div", class_="articleBody")
     if articleBody is None:
